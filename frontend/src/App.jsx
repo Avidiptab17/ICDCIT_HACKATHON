@@ -194,7 +194,7 @@ function App() {
             <div className="status-indicator">
               <div className={`status-dot ${backendHealthy ? 'online' : 'offline'}`}></div>
               <span className="status-text">
-                {backendHealthy ? 'Backend Online' : 'Backend Offline'}
+                {backendHealthy ? 'Online' : 'Offline'}
               </span>
             </div>
 
