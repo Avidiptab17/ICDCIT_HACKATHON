@@ -22,7 +22,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          mapbox: ['mapbox-gl'],
+          'maplibre-gl': ['maplibre-gl'],
           'react-vendor': ['react', 'react-dom'],
         },
       },
@@ -30,6 +30,6 @@ export default defineConfig({
   },
 
   optimizeDeps: {
-    include: ['mapbox-gl'],
+    include: ['maplibre-gl'],
   },
 })

@@ -1,7 +1,7 @@
 {
   "name": "uhi-analysis-frontend",
   "version": "1.0.0",
-  "description": "Urban Heat Island Analysis System - Frontend with React, Mapbox, and MVVM Architecture",
+  "description": "Urban Heat Island Analysis System - Frontend with React, MapLibre, and MVVM Architecture",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,7 @@
   },
   "proxy": "http://127.0.0.1:5000",
   "dependencies": {
-    "mapbox-gl": "^2.15.0",
+    "maplibre-gl": "^3.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -24,16 +24,12 @@
   "keywords": [
     "urban-heat-island",
     "react",
-    "mapbox",
-    "google-earth-engine",
+    "maplibre",
+    "openstreetmap",
     "ndvi",
     "lst",
     "climate-analysis"
   ],
   "author": "Your Name",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yourusername/uhi-analysis"
-  }
+  "license": "MIT"
 }

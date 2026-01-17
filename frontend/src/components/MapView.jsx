@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 const MapView = ({ data, onPointClick, selectedZone, showHeatmap }) => {
   const mapContainer = useRef(null);
@@ -14,20 +14,18 @@ const MapView = ({ data, onPointClick, selectedZone, showHeatmap }) => {
   useEffect(() => {
     if (map.current) return;
 
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
-
-    map.current = new mapboxgl.Map({
+    map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [85.82, 20.30], // Bhubaneswar
+      style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+      center: [85.8245, 20.2961], // Bhubaneswar
       zoom: 11,
       pitch: 45
     });
 
-    map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
-    map.current.addControl(new mapboxgl.FullscreenControl(), "top-right");
+    map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+    map.current.addControl(new maplibregl.FullscreenControl(), "top-right");
     map.current.addControl(
-      new mapboxgl.ScaleControl({ maxWidth: 100, unit: "metric" }),
+      new maplibregl.ScaleControl({ maxWidth: 100, unit: "metric" }),
       "bottom-left"
     );
 
@@ -73,7 +71,7 @@ const MapView = ({ data, onPointClick, selectedZone, showHeatmap }) => {
         boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
       });
 
-      const popup = new mapboxgl.Popup({
+      const popup = new maplibregl.Popup({
         offset: 25,
         maxWidth: "300px"
       }).setHTML(`
@@ -85,7 +83,7 @@ const MapView = ({ data, onPointClick, selectedZone, showHeatmap }) => {
         💡 ${point.recommendation}
       `);
 
-      const marker = new mapboxgl.Marker(el)
+      const marker = new maplibregl.Marker(el)
         .setLngLat([point.lon, point.lat])
         .setPopup(popup)
         .addTo(map.current);
@@ -95,7 +93,7 @@ const MapView = ({ data, onPointClick, selectedZone, showHeatmap }) => {
     });
 
     if (filteredData.length > 0) {
-      const bounds = new mapboxgl.LngLatBounds();
+      const bounds = new maplibregl.LngLatBounds();
       filteredData.forEach(p => bounds.extend([p.lon, p.lat]));
       map.current.fitBounds(bounds, { padding: 50, maxZoom: 14 });
     }
