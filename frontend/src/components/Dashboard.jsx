@@ -357,9 +357,9 @@ const Dashboard = ({ statistics, data }) => {
             📡 Data Source
           </div>
           <div style={{ color: '#bfdbfe', lineHeight: '1.5' }}>
-            <div>Satellite: Landsat 8 (Google Earth Engine)</div>
-            <div>Image Date: {statistics.date_range.image_date}</div>
-            <div>Analysis: NDVI + LST Algorithms</div>
+            <div>Data: OpenStreetMap + Open-Meteo API</div>
+            <div>Analysis Date: {statistics.date_range.image_date}</div>
+            <div>Algorithms: NDVI Estimation + LST</div>
             <div>Clustering: K-Means (3 zones)</div>
           </div>
         </div>
