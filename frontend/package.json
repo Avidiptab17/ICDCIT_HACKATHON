@@ -9,7 +9,6 @@
     "preview": "vite preview",
     "lint": "eslint src --ext js,jsx"
   },
-  "proxy": "http://127.0.0.1:5000",
   "dependencies": {
     "maplibre-gl": "^3.6.2",
     "react": "^18.2.0",

@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
@@ -8,8 +8,8 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:5000',
+      "/api": {
+        target: process.env.VITE_API_URL || "http://127.0.0.1:5000",
         changeOrigin: true,
         secure: false,
       },
@@ -17,19 +17,19 @@ export default defineConfig({
   },
 
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          'maplibre-gl': ['maplibre-gl'],
-          'react-vendor': ['react', 'react-dom'],
+          "maplibre-gl": ["maplibre-gl"],
+          "react-vendor": ["react", "react-dom"],
         },
       },
     },
   },
 
   optimizeDeps: {
-    include: ['maplibre-gl'],
+    include: ["maplibre-gl"],
   },
-})
+});

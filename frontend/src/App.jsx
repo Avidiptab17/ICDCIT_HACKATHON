@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import MapView from './components/MapView';
-import Legend from './components/Legend';
-import Dashboard from './components/Dashboard';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import MapView from "./components/MapView";
+import Legend from "./components/Legend";
+import Dashboard from "./components/Dashboard";
+import "./App.css";
 
 // ViewModel - Business Logic Layer
 class UHIViewModel {
   constructor() {
-    this.apiBaseUrl = '/api/analyze';
+    const base = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+  this.apiBaseUrl = `${base}/api/analyze`;
   }
 
   // Fetch UHI data from backend
   async fetchUHIData(numPoints = 100, daysBack = 30) {
     try {
       const response = await fetch(
-        `${this.apiBaseUrl}/uhi?points=${numPoints}&days=${daysBack}`
+        `${this.apiBaseUrl}/uhi?points=${numPoints}&days=${daysBack}`,
       );
 
       if (!response.ok) {
@@ -24,12 +25,12 @@ class UHIViewModel {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || 'API returned error');
+        throw new Error(result.error || "API returned error");
       }
 
       return result;
     } catch (error) {
-      console.error('Error fetching UHI data:', error);
+      console.error("Error fetching UHI data:", error);
       throw error;
     }
   }
@@ -49,11 +50,11 @@ class UHIViewModel {
     const errors = [];
 
     if (numPoints < 10 || numPoints > 500) {
-      errors.push('Number of points must be between 10 and 500');
+      errors.push("Number of points must be between 10 and 500");
     }
 
     if (daysBack < 7 || daysBack > 90) {
-      errors.push('Days back must be between 7 and 90');
+      errors.push("Days back must be between 7 and 90");
     }
 
     return errors;
@@ -62,10 +63,10 @@ class UHIViewModel {
   // Format date for display
   formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   }
 }
@@ -85,10 +86,10 @@ function App() {
   // UI State
   const [numPoints, setNumPoints] = useState(100);
   const [daysBack, setDaysBack] = useState(30);
-  const [selectedZone, setSelectedZone] = useState('all');
+  const [selectedZone, setSelectedZone] = useState("all");
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
-  const [activeView, setActiveView] = useState('map'); // 'map' or 'analytics'
+  const [activeView, setActiveView] = useState("map"); // 'map' or 'analytics'
 
   // Check backend health on mount
   useEffect(() => {
@@ -107,7 +108,7 @@ function App() {
     setBackendHealthy(healthy);
 
     if (!healthy) {
-      setError('Backend server is not responding. Please ensure Flask is running on port 5000.');
+      setError("Backend server is not responding. Please try again later.");
       setLoading(false);
     }
   };
@@ -120,7 +121,7 @@ function App() {
       // Validate parameters
       const errors = viewModel.validateParameters(numPoints, daysBack);
       if (errors.length > 0) {
-        setError(errors.join('. '));
+        setError(errors.join(". "));
         setLoading(false);
         return;
       }
@@ -132,10 +133,9 @@ function App() {
       setUhiData(result.data);
       setStatistics(result.statistics);
       setError(null);
-
     } catch (err) {
-      setError(err.message || 'Failed to load UHI data');
-      console.error('Error loading data:', err);
+      setError(err.message || "Failed to load UHI data");
+      console.error("Error loading data:", err);
     } finally {
       setLoading(false);
     }
@@ -160,17 +160,21 @@ function App() {
   const handleExportData = () => {
     if (!uhiData) return;
 
-    const dataStr = JSON.stringify({
-      data: uhiData,
-      statistics: statistics,
-      exportedAt: new Date().toISOString()
-    }, null, 2);
+    const dataStr = JSON.stringify(
+      {
+        data: uhiData,
+        statistics: statistics,
+        exportedAt: new Date().toISOString(),
+      },
+      null,
+      2,
+    );
 
-    const blob = new Blob([dataStr], { type: 'application/json' });
+    const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = `uhi-analysis-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `uhi-analysis-${new Date().toISOString().split("T")[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -192,9 +196,11 @@ function App() {
 
           <div className="header-right">
             <div className="status-indicator">
-              <div className={`status-dot ${backendHealthy ? 'online' : 'offline'}`}></div>
+              <div
+                className={`status-dot ${backendHealthy ? "online" : "offline"}`}
+              ></div>
               <span className="status-text">
-                {backendHealthy ? 'Online' : 'Offline'}
+                {backendHealthy ? "Online" : "Offline"}
               </span>
             </div>
 
@@ -203,7 +209,7 @@ function App() {
               onClick={handleRefresh}
               disabled={loading || !backendHealthy}
             >
-              {loading ? '🔄 Loading...' : '🔄 Refresh'}
+              {loading ? "🔄 Loading..." : "🔄 Refresh"}
             </button>
 
             <button
@@ -259,9 +265,7 @@ function App() {
           </div>
 
           <div className="control-group">
-            <label className="control-label">
-              🗺️ Visualization Options
-            </label>
+            <label className="control-label">🗺️ Visualization Options</label>
             <div className="toggle-group">
               <label className="toggle-label">
                 <input
@@ -296,14 +300,12 @@ function App() {
               <strong>Error:</strong> {error}
               {!backendHealthy && (
                 <div className="error-help">
-                  Make sure to run: <code>python app.py</code>
+                  Backend is currently unavailable. Please try again in a
+                  minute.
                 </div>
               )}
             </div>
-            <button
-              className="error-close"
-              onClick={() => setError(null)}
-            >
+            <button className="error-close" onClick={() => setError(null)}>
               ✕
             </button>
           </div>
@@ -318,29 +320,27 @@ function App() {
             <p className="loading-text">
               Fetching data from OpenStreetMap & Weather APIs...
             </p>
-            <p className="loading-subtext">
-              This may take 10-30 seconds
-            </p>
+            <p className="loading-subtext">This may take 10-30 seconds</p>
           </div>
         ) : uhiData ? (
           <>
             {/* View Tabs */}
             <div className="view-tabs">
               <button
-                className={`tab-button ${activeView === 'map' ? 'active' : ''}`}
-                onClick={() => setActiveView('map')}
+                className={`tab-button ${activeView === "map" ? "active" : ""}`}
+                onClick={() => setActiveView("map")}
               >
                 🗺️ Map View
               </button>
               <button
-                className={`tab-button ${activeView === 'analytics' ? 'active' : ''}`}
-                onClick={() => setActiveView('analytics')}
+                className={`tab-button ${activeView === "analytics" ? "active" : ""}`}
+                onClick={() => setActiveView("analytics")}
               >
                 📊 Analytics
               </button>
             </div>
 
-            {activeView === 'map' ? (
+            {activeView === "map" ? (
               <div className="map-layout">
                 <div className="map-sidebar">
                   <Legend
@@ -361,10 +361,7 @@ function App() {
               </div>
             ) : (
               <div className="analytics-layout">
-                <Dashboard
-                  statistics={statistics}
-                  data={uhiData}
-                />
+                <Dashboard statistics={statistics} data={uhiData} />
               </div>
             )}
 
@@ -373,7 +370,9 @@ function App() {
               <div className="metadata-footer">
                 <div className="metadata-item">
                   <span className="metadata-label">Data Source:</span>
-                  <span className="metadata-value">OpenStreetMap + Open-Meteo</span>
+                  <span className="metadata-value">
+                    OpenStreetMap + Open-Meteo
+                  </span>
                 </div>
                 <div className="metadata-item">
                   <span className="metadata-label">Location:</span>
@@ -382,12 +381,15 @@ function App() {
                 <div className="metadata-item">
                   <span className="metadata-label">Analysis Period:</span>
                   <span className="metadata-value">
-                    {statistics.date_range.start_date} to {statistics.date_range.end_date}
+                    {statistics.date_range.start_date} to{" "}
+                    {statistics.date_range.end_date}
                   </span>
                 </div>
                 <div className="metadata-item">
                   <span className="metadata-label">Total Points:</span>
-                  <span className="metadata-value">{statistics.total_points}</span>
+                  <span className="metadata-value">
+                    {statistics.total_points}
+                  </span>
                 </div>
               </div>
             )}
