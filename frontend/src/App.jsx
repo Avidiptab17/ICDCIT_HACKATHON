@@ -203,7 +203,7 @@ const [showHeader, setShowHeader] = useState(true);
   };
 
   return (
-    <div className="app">
+    <div className={`app ${showHeader ? "with-header" : "no-header"}`}>
       {/* Header */}
       <header className={`app-header ${showHeader ? "header-show" : "header-hide"}`}>
         <div className="header-content">
