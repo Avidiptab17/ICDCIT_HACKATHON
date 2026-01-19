@@ -327,10 +327,10 @@ body {
 
 /* Main Content */
 .main-content {
-  height: calc(100vh - 90px); /* 90px = header height approx */
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* smooth mobile scrolling */
+  height: auto;
+  overflow: visible;
 }
+
 
 .app {
   padding-top: 90px;
@@ -565,4 +565,8 @@ body {
   position: relative;  /* or just remove position completely */
   transform: none;
   opacity: 1;
+}
+
+.app {
+  min-height: 100vh;
 }
