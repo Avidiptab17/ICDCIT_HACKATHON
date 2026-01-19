@@ -73,6 +73,8 @@ class UHIViewModel {
 
 // Main App Component (View)
 function App() {
+  const scrollRef = React.useRef(null);
+
   // Initialize ViewModel
   const [viewModel] = useState(() => new UHIViewModel());
 
@@ -93,29 +95,24 @@ function App() {
 const [showHeader, setShowHeader] = useState(true);
 
 
+
   // Check backend health on mount
   useEffect(() => {
     checkBackendHealth();
   }, []);
 
-  useEffect(() => {
-  let lastScrollY = window.scrollY;
-  let hasUserScrolled = false;
+
+ useEffect(() => {
+  const el = scrollRef.current;
+  if (!el) return;
+
+  let lastScrollY = el.scrollTop;
 
   const handleScroll = () => {
-    const currentScrollY = window.scrollY;
+    const currentScrollY = el.scrollTop;
 
-    if (currentScrollY > 20) {
-      hasUserScrolled = true;
-    }
-
+    // Always show at top
     if (currentScrollY < 20) {
-      setShowHeader(true);
-      lastScrollY = currentScrollY;
-      return;
-    }
-
-    if (!hasUserScrolled) {
       setShowHeader(true);
       lastScrollY = currentScrollY;
       return;
@@ -130,12 +127,10 @@ const [showHeader, setShowHeader] = useState(true);
     lastScrollY = currentScrollY;
   };
 
-  window.addEventListener("scroll", handleScroll, { passive: true });
+  el.addEventListener("scroll", handleScroll, { passive: true });
 
-  return () => window.removeEventListener("scroll", handleScroll);
+  return () => el.removeEventListener("scroll", handleScroll);
 }, []);
-
-
 
   // Load data on mount
   useEffect(() => {
@@ -354,7 +349,8 @@ const [showHeader, setShowHeader] = useState(true);
       )}
 
       {/* Main Content */}
-      <div className="main-content">
+      <div className="main-content" ref={scrollRef}>
+
         {loading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
