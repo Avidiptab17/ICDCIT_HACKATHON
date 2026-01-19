@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import MapView from "./components/MapView";
 import Legend from "./components/Legend";
 import Dashboard from "./components/Dashboard";
@@ -8,34 +8,26 @@ import "./App.css";
 class UHIViewModel {
   constructor() {
     const base = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
-  this.apiBaseUrl = `${base}/api/analyze`;
+    this.apiBaseUrl = `${base}/api/analyze`;
   }
 
-  // Fetch UHI data from backend
   async fetchUHIData(numPoints = 100, daysBack = 30) {
-    try {
-      const response = await fetch(
-        `${this.apiBaseUrl}/uhi?points=${numPoints}&days=${daysBack}`,
-      );
+    const response = await fetch(
+      `${this.apiBaseUrl}/uhi?points=${numPoints}&days=${daysBack}`
+    );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "API returned error");
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Error fetching UHI data:", error);
-      throw error;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || "API returned error");
+    }
+
+    return result;
   }
 
-  // Check backend health
   async checkHealth() {
     try {
       const response = await fetch(`${this.apiBaseUrl}/health`);
@@ -45,7 +37,6 @@ class UHIViewModel {
     }
   }
 
-  // Validate input parameters
   validateParameters(numPoints, daysBack) {
     const errors = [];
 
@@ -59,80 +50,65 @@ class UHIViewModel {
 
     return errors;
   }
-
-  // Format date for display
-  formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }
 }
 
-// Main App Component (View)
 function App() {
+  // ✅ show/hide header
+  const [showHeader, setShowHeader] = useState(true);
 
-  // Initialize ViewModel
+  // ✅ Initialize ViewModel
   const [viewModel] = useState(() => new UHIViewModel());
 
-  // State management
+  // ✅ State management
   const [uhiData, setUhiData] = useState(null);
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [backendHealthy, setBackendHealthy] = useState(false);
 
-  // UI State
+  // ✅ UI State
   const [numPoints, setNumPoints] = useState(100);
   const [daysBack, setDaysBack] = useState(30);
   const [selectedZone, setSelectedZone] = useState("all");
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
-  const [activeView, setActiveView] = useState("map"); // 'map' or 'analytics'
+  const [activeView, setActiveView] = useState("map");
 
-  // Check backend health on mount
+  // ✅ Check backend health on mount
   useEffect(() => {
     checkBackendHealth();
   }, []);
 
-
- useEffect(() => {
-  const el = scrollRef.current;
-  if (!el) return;
-
-  let lastScrollY = el.scrollTop;
-
-  const handleScroll = () => {
-    const currentScrollY = el.scrollTop;
-
-    // Always show at top
-    if (currentScrollY < 20) {
-      setShowHeader(true);
-      lastScrollY = currentScrollY;
-      return;
-    }
-
-    if (currentScrollY < lastScrollY) {
-      setShowHeader(true); // scrolling up
-    } else {
-      setShowHeader(false); // scrolling down
-    }
-
-    lastScrollY = currentScrollY;
-  };
-
-  el.addEventListener("scroll", handleScroll, { passive: true });
-
-  return () => el.removeEventListener("scroll", handleScroll);
-}, []);
-
-  // Load data on mount
+  // ✅ HEADER SCROLL LOGIC (on window)
   useEffect(() => {
-    if (backendHealthy) {
-      loadUHIData();
-    }
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Always show when near top
+      if (currentScrollY < 20) {
+        setShowHeader(true);
+        lastScrollY = currentScrollY;
+        return;
+      }
+
+      if (currentScrollY < lastScrollY) {
+        setShowHeader(true); // scrolling up
+      } else {
+        setShowHeader(false); // scrolling down
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ✅ Load data when backend is healthy
+  useEffect(() => {
+    if (backendHealthy) loadUHIData();
   }, [backendHealthy]);
 
   const checkBackendHealth = async () => {
@@ -150,7 +126,6 @@ function App() {
     setError(null);
 
     try {
-      // Validate parameters
       const errors = viewModel.validateParameters(numPoints, daysBack);
       if (errors.length > 0) {
         setError(errors.join(". "));
@@ -158,13 +133,10 @@ function App() {
         return;
       }
 
-      // Fetch data from backend
       const result = await viewModel.fetchUHIData(numPoints, daysBack);
 
-      // Update state
       setUhiData(result.data);
       setStatistics(result.statistics);
-      setError(null);
     } catch (err) {
       setError(err.message || "Failed to load UHI data");
       console.error("Error loading data:", err);
@@ -173,21 +145,10 @@ function App() {
     }
   };
 
-  const handleRefresh = () => {
-    loadUHIData();
-  };
-
-  const handleApplyFilters = () => {
-    loadUHIData();
-  };
-
-  const handleZoneFilter = (zone) => {
-    setSelectedZone(zone);
-  };
-
-  const handlePointClick = (point) => {
-    setSelectedPoint(point);
-  };
+  const handleRefresh = () => loadUHIData();
+  const handleApplyFilters = () => loadUHIData();
+  const handleZoneFilter = (zone) => setSelectedZone(zone);
+  const handlePointClick = (point) => setSelectedPoint(point);
 
   const handleExportData = () => {
     if (!uhiData) return;
@@ -199,7 +160,7 @@ function App() {
         exportedAt: new Date().toISOString(),
       },
       null,
-      2,
+      2
     );
 
     const blob = new Blob([dataStr], { type: "application/json" });
@@ -212,9 +173,9 @@ function App() {
   };
 
   return (
-    <div className="app">
-<header className="app-header">
-
+    <div className={`app ${showHeader ? "with-header" : "no-header"}`}>
+      {/* ✅ Header */}
+      <header className={`app-header ${showHeader ? "header-show" : "header-hide"}`}>
         <div className="header-content">
           <div className="header-left">
             <h1 className="app-title">
@@ -228,12 +189,8 @@ function App() {
 
           <div className="header-right">
             <div className="status-indicator">
-              <div
-                className={`status-dot ${backendHealthy ? "online" : "offline"}`}
-              ></div>
-              <span className="status-text">
-                {backendHealthy ? "Online" : "Offline"}
-              </span>
+              <div className={`status-dot ${backendHealthy ? "online" : "offline"}`} />
+              <span className="status-text">{backendHealthy ? "Online" : "Offline"}</span>
             </div>
 
             <button
@@ -244,18 +201,14 @@ function App() {
               {loading ? "🔄 Loading..." : "🔄 Refresh"}
             </button>
 
-            <button
-              className="btn btn-secondary"
-              onClick={handleExportData}
-              disabled={!uhiData}
-            >
+            <button className="btn btn-secondary" onClick={handleExportData} disabled={!uhiData}>
               📥 Export
             </button>
           </div>
         </div>
       </header>
 
-      {/* Control Panel */}
+      {/* ✅ Control Panel */}
       <div className="control-panel">
         <div className="controls-grid">
           <div className="control-group">
@@ -272,9 +225,7 @@ function App() {
               className="control-slider"
               disabled={loading}
             />
-            <div className="control-info">
-              More points = Higher accuracy, slower processing
-            </div>
+            <div className="control-info">More points = Higher accuracy, slower processing</div>
           </div>
 
           <div className="control-group">
@@ -291,9 +242,7 @@ function App() {
               className="control-slider"
               disabled={loading}
             />
-            <div className="control-info">
-              Recent data may have more cloud cover
-            </div>
+            <div className="control-info">Recent data may have more cloud cover</div>
           </div>
 
           <div className="control-group">
@@ -323,19 +272,13 @@ function App() {
         </div>
       </div>
 
-      {/* Error Display */}
+      {/* ✅ Error */}
       {error && (
         <div className="error-banner">
           <div className="error-content">
             <span className="error-icon">⚠️</span>
             <div>
               <strong>Error:</strong> {error}
-              {!backendHealthy && (
-                <div className="error-help">
-                  Backend is currently unavailable. Please try again in a
-                  minute.
-                </div>
-              )}
             </div>
             <button className="error-close" onClick={() => setError(null)}>
               ✕
@@ -344,20 +287,16 @@ function App() {
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="main-content" ref={scrollRef}>
-
+      {/* ✅ Main Content */}
+      <div className="main-content">
         {loading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
-            <p className="loading-text">
-              Fetching data from OpenStreetMap & Weather APIs...
-            </p>
+            <p className="loading-text">Fetching data from OpenStreetMap & Weather APIs...</p>
             <p className="loading-subtext">This may take 10-30 seconds</p>
           </div>
         ) : uhiData ? (
           <>
-            {/* View Tabs */}
             <div className="view-tabs">
               <button
                 className={`tab-button ${activeView === "map" ? "active" : ""}`}
@@ -395,35 +334,6 @@ function App() {
             ) : (
               <div className="analytics-layout">
                 <Dashboard statistics={statistics} data={uhiData} />
-              </div>
-            )}
-
-            {/* Data Info Footer */}
-            {statistics?.date_range && (
-              <div className="metadata-footer">
-                <div className="metadata-item">
-                  <span className="metadata-label">Data Source:</span>
-                  <span className="metadata-value">
-                    OpenStreetMap + Open-Meteo
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Location:</span>
-                  <span className="metadata-value">Bhubaneswar, India</span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Analysis Period:</span>
-                  <span className="metadata-value">
-                    {statistics.date_range.start_date} to{" "}
-                    {statistics.date_range.end_date}
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Total Points:</span>
-                  <span className="metadata-value">
-                    {statistics.total_points}
-                  </span>
-                </div>
               </div>
             )}
           </>
